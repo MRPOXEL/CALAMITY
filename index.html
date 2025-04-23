@@ -207,4 +207,264 @@
         <div class="instructions">
             <h2>Instructions</h2>
             <p>Welcome to the Calamity Book, where you can invoke divine retribution upon those who deserve it.</p>
-            <p><strong>To summon a calam
+            <p><strong>To summon a calamity:</strong> Write the name of the person or creature in the target field. You may optionally specify:</p>
+            <ul>
+                <li>The type of calamity (random if unspecified)</li>
+                <li>When it should occur (within 30 days)</li>
+                <li>How it should happen (be creative)</li>
+                <li>A reason for the calamity (optional but recommended)</li>
+            </ul>
+            <p class="warning">Warning: If you don't provide a reason, you'll have 60 seconds to reconsider before the calamity is automatically confirmed. Calamities cannot be undone once confirmed.</p>
+        </div>
+
+        <div class="calamity-form">
+            <div class="form-group">
+                <label for="target">Target Name:</label>
+                <input type="text" id="target" placeholder="Who shall face divine retribution?" required>
+            </div>
+
+            <div class="form-group">
+                <label for="calamity-type">Type of Calamity (optional):</label>
+                <select id="calamity-type">
+                    <option value="random">Random Calamity</option>
+                    <option value="misfortune">Misfortune</option>
+                    <option value="illness">Mysterious Illness</option>
+                    <option value="accident">Freak Accident</option>
+                    <option value="humiliation">Public Humiliation</option>
+                    <option value="financial">Financial Ruin</option>
+                    <option value="natural">Natural Disaster</option>
+                    <option value="supernatural">Supernatural Event</option>
+                    <option value="karma">Instant Karma</option>
+                    <option value="custom">Custom Calamity</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="custom-calamity-group" style="display: none;">
+                <label for="custom-calamity">Describe Your Custom Calamity:</label>
+                <input type="text" id="custom-calamity" placeholder="Be specific about the calamity you wish to invoke">
+            </div>
+
+            <div class="form-group">
+                <label for="timeframe">Timeframe (optional):</label>
+                <select id="timeframe">
+                    <option value="random">Random Time</option>
+                    <option value="instant">Immediately</option>
+                    <option value="1day">Within 24 Hours</option>
+                    <option value="3days">Within 3 Days</option>
+                    <option value="1week">Within 1 Week</option>
+                    <option value="1month">Within 1 Month</option>
+                    <option value="custom">Specific Date</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="custom-date-group" style="display: none;">
+                <label for="custom-date">Select Date:</label>
+                <input type="date" id="custom-date">
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Reason (optional but recommended):</label>
+                <textarea id="reason" placeholder="Why does this person/creature deserve a calamity? (You have 60 seconds to add a reason after submission)"></textarea>
+            </div>
+
+            <button id="submit-btn">SUMMON CALAMITY</button>
+            <div class="timer" id="timer" style="display: none;"></div>
+        </div>
+
+        <div class="result" id="result">
+            <h2>CALAMITY CONFIRMED</h2>
+            <p>The wheels of fate have been set in motion.</p>
+            
+            <div class="calamity-details" id="calamity-details">
+                <!-- Filled by JavaScript -->
+            </div>
+            
+            <p>The target will receive their due retribution at the appointed time.</p>
+            <p class="warning">Remember: What goes around comes around. Use the Calamity Book wisely.</p>
+        </div>
+
+        <footer>
+            <p>The Calamity Book &copy; 2023 | All calamities are final and cannot be undone</p>
+            <p>Use at your own risk - karma is always watching</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calamityTypeSelect = document.getElementById('calamity-type');
+            const customCalamityGroup = document.getElementById('custom-calamity-group');
+            const timeframeSelect = document.getElementById('timeframe');
+            const customDateGroup = document.getElementById('custom-date-group');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const resultElement = document.getElementById('result');
+            const calamityDetails = document.getElementById('calamity-details');
+            
+            let countdown;
+            let secondsLeft = 60;
+            
+            // Show/hide custom calamity field
+            calamityTypeSelect.addEventListener('change', function() {
+                customCalamityGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            
+            // Show/hide custom date field
+            timeframeSelect.addEventListener('change', function() {
+                customDateGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            
+            submitBtn.addEventListener('click', function() {
+                const target = document.getElementById('target').value.trim();
+                
+                if (!target) {
+                    alert('You must specify a target for the calamity!');
+                    return;
+                }
+                
+                // Disable the button and start timer if no reason
+                submitBtn.disabled = true;
+                const reason = document.getElementById('reason').value.trim();
+                
+                if (!reason) {
+                    timerElement.style.display = 'block';
+                    startCountdown();
+                } else {
+                    confirmCalamity();
+                }
+            });
+            
+            function startCountdown() {
+                updateTimerDisplay();
+                
+                countdown = setInterval(function() {
+                    secondsLeft--;
+                    updateTimerDisplay();
+                    
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdown);
+                        confirmCalamity();
+                    }
+                }, 1000);
+            }
+            
+            function updateTimerDisplay() {
+                timerElement.textContent = `Time to add a reason: ${secondsLeft} seconds`;
+            }
+            
+            function confirmCalamity() {
+                clearInterval(countdown);
+                
+                // Gather all form data
+                const target = document.getElementById('target').value.trim();
+                const calamityType = document.getElementById('calamity-type').value;
+                const customCalamity = document.getElementById('custom-calamity').value.trim();
+                const timeframe = document.getElementById('timeframe').value;
+                const customDate = document.getElementById('custom-date').value;
+                const reason = document.getElementById('reason').value.trim() || 'No reason given - automatic confirmation';
+                
+                // Determine the final calamity details
+                const calamityDetailsText = generateCalamityDetails(target, calamityType, customCalamity, timeframe, customDate, reason);
+                calamityDetails.innerHTML = calamityDetailsText;
+                
+                // Show the result after a short delay
+                setTimeout(function() {
+                    resultElement.style.display = 'block';
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 6000);
+            }
+            
+            function generateCalamityDetails(target, calamityType, customCalamity, timeframe, customDate, reason) {
+                // Determine calamity type
+                let finalCalamityType;
+                if (calamityType === 'custom' && customCalamity) {
+                    finalCalamityType = customCalamity;
+                } else if (calamityType === 'random') {
+                    finalCalamityType = getRandomCalamity();
+                } else {
+                    finalCalamityType = document.getElementById('calamity-type').options[document.getElementById('calamity-type').selectedIndex].text;
+                }
+                
+                // Determine timeframe
+                let finalTimeframe;
+                if (timeframe === 'custom' && customDate) {
+                    finalTimeframe = new Date(customDate).toLocaleDateString();
+                } else if (timeframe === 'random') {
+                    finalTimeframe = getRandomTimeframe();
+                } else {
+                    finalTimeframe = document.getElementById('timeframe').options[document.getElementById('timeframe').selectedIndex].text;
+                }
+                
+                // Create the details HTML
+                let html = `
+                    <p><span>Target:</span> ${target}</p>
+                    <p><span>Calamity Type:</span> ${finalCalamityType}</p>
+                    <p><span>Timeframe:</span> ${finalTimeframe}</p>
+                    <p><span>Reason:</span> ${reason}</p>
+                `;
+                
+                // Add a random ominous note
+                const ominousNotes = [
+                    "The universe has acknowledged your request.",
+                    "Fate's design cannot be undone.",
+                    "The cosmic balance shifts to accommodate your will.",
+                    "Destiny's path has been altered.",
+                    "The threads of fortune have been rewoven.",
+                    "Karma's scales tip in your favor."
+                ];
+                
+                const randomNote = ominousNotes[Math.floor(Math.random() * ominousNotes.length)];
+                html += `<p class="warning">${randomNote}</p>`;
+                
+                return html;
+            }
+            
+            function getRandomCalamity() {
+                const calamities = [
+                    "Sudden Hair Loss",
+                    "Endless Itching",
+                    "Perpetual Bad Luck",
+                    "Uncontrollable Sneezing",
+                    "Chronic Forgetfulness",
+                    "Attracts Bees",
+                    "Shoes Always Untied",
+                    "Phone Always Dies at 30%",
+                    "Eternal Traffic Jams",
+                    "Never Wins a Coin Toss",
+                    "Always Steps on Legos",
+                    "Toilet Paper Always Runs Out",
+                    "Permanent Sock Mismatch",
+                    "Endless Paper Cuts",
+                    "Always Forks in the Road",
+                    "Perpetual Brain Freeze",
+                    "Eternal Sun in Eyes",
+                    "Never Finds Matching Tupperware Lids",
+                    "Always Gets the Shopping Cart with a Wobbly Wheel",
+                    "Infinite Buffering"
+                ];
+                
+                return calamities[Math.floor(Math.random() * calamities.length)];
+            }
+            
+            function getRandomTimeframe() {
+                const timeframes = [
+                    "Before the next full moon",
+                    "When the stars align",
+                    "At the most inconvenient moment",
+                    "During their next important event",
+                    "When they least expect it",
+                    "On a day ending with 'y'",
+                    "Before they can say 'calamity'",
+                    "At the stroke of midnight",
+                    "When the clock strikes thirteen",
+                    "In their hour of need"
+                ];
+                
+                return timeframes[Math.floor(Math.random() * timeframes.length)];
+            }
+        });
+    </script>
+</body>
+    </html>
